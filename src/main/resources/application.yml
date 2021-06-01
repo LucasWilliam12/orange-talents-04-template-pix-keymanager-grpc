@@ -1,3 +1,19 @@
 micronaut:
   application:
     name: keyManagerGrpc
+
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/kymanger
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: senha
+    dialect: POSTGRES
+
+clients:
+  itau:
+    address: ${ITAU_URL:`http://localhost:9091`}
+
+jpa.default.properties.hibernate.hbm2ddl.auto: update
+jpa.default.properties.hibernate.show_sql: true
+jpa.default.properties.hibernate.format_sql: true
