@@ -1,6 +1,7 @@
 package br.com.zup.edu.models
 
 import br.com.zup.edu.RegisterPixKeyRequest
+import br.com.zup.edu.models.enums.AccountTypeEnum
 import br.com.zup.edu.models.enums.KeyTypeEnum
 import io.micronaut.core.annotation.Introspected
 import io.micronaut.validation.Validated
@@ -22,7 +23,7 @@ data class KeyModel(@field:Column(nullable = true, unique = true)
                     @field:NotNull(message = "O tipo da conta não pode ser vazio")
                     @field:Column(nullable = false)
                     @Enumerated
-                    val accountType: RegisterPixKeyRequest.AccountType,
+                    val accountType: AccountTypeEnum,
                     @field:NotNull(message = "O tipo da chave não pode ser vazio")
                     @Enumerated
                     val keyType: KeyTypeEnum,

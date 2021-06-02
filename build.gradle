@@ -48,8 +48,12 @@ dependencies {
 
     testImplementation("io.micronaut:micronaut-http-client")
 
-}
+    // Test
+    testImplementation("org.mockito:mockito-core:3.0.8")
+    testImplementation("io.mockk:mockk:1.0.3")
+    testImplementation("com.h2database:h2:1.4.200")
 
+}
 
 application {
     mainClass.set("br.com.zup.edu.ApplicationKt")
