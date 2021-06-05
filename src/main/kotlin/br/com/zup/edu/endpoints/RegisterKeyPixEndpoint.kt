@@ -1,8 +1,6 @@
 package br.com.zup.edu.endpoints
 
-import br.com.zup.edu.KeyManagerGrpcServiceGrpc
-import br.com.zup.edu.RegisterPixKeyRequest
-import br.com.zup.edu.RegisterPixKeyResponse
+import br.com.zup.edu.*
 import br.com.zup.edu.exceptions.HandlerException
 import br.com.zup.edu.services.RegisterNewKeyPixService
 import br.com.zup.edu.utils.toModel
@@ -18,13 +16,22 @@ class RegisterKeyPixEndpoint(@Inject val registerKeyPixService: RegisterNewKeyPi
 
         val logger = LoggerFactory.getLogger(RegisterKeyPixEndpoint::class.java)
         logger.info("Cadastrando uma chave pix:.")
+
         val newKey = registerKeyPixService.register(request.toModel())
+
         responseObserver.onNext(RegisterPixKeyResponse.newBuilder()
             .setClientId(newKey.idClient.toString())
-            .setPixId(newKey.pixId.toString()).build())
+            .setPixId(newKey.pixId.toString())
+            .setKeyValue(newKey.keyValue).build())
         responseObserver.onCompleted()
         logger.info("Chave pix criada com sucesso.")
 
     }
 
+    override fun delete(request: DeletePixKeyRequest, responseObserver: StreamObserver<DeletePixKeyResponse>) {
+        val response = registerKeyPixService.delete(request.toModel())
+
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    }
 }

@@ -1,6 +1,9 @@
 package br.com.zup.edu.exceptions
 
+import br.com.zup.edu.DetailsError
 import io.grpc.Status
+import com.google.rpc.Status as GStatus
+import io.grpc.protobuf.StatusProto
 import io.grpc.stub.StreamObserver
 import io.micronaut.aop.Around
 import io.micronaut.aop.InterceptorBean
@@ -26,17 +29,41 @@ class HandlerExceptions: MethodInterceptor<Any, Any> {
                 .firstOrNull() as StreamObserver
             when(e){
                 is PixKeyAlreadyExistsException -> {
-                    observer.onError(Status.ALREADY_EXISTS.withDescription(e.message).asRuntimeException())
+                    val status = GStatus.newBuilder()
+                        .setCode(Status.ALREADY_EXISTS.code.value())
+                        .setMessage(e.message)
+                        .addDetails(com.google.protobuf.Any.pack(DetailsError.newBuilder().setCode(401).build()))
+                        .build()
+                    val statusProto = StatusProto.toStatusRuntimeException(status)
+                    observer.onError(statusProto)
                 }
                 is IllegalArgumentException -> {
-                    observer.onError(Status.INVALID_ARGUMENT.withDescription(e.message).asRuntimeException())
+                    val status = GStatus.newBuilder()
+                        .setCode(Status.INVALID_ARGUMENT.code.value())
+                        .setMessage(e.message)
+                        .addDetails(com.google.protobuf.Any.pack(DetailsError.newBuilder().setCode(401).build()))
+                        .build()
+                    val statusProto = StatusProto.toStatusRuntimeException(status)
+                    observer.onError(statusProto)
                 }
                 is ValidationException -> {
-                    observer.onError(Status.INVALID_ARGUMENT.withDescription(e.message).asRuntimeException())
+                    val status = GStatus.newBuilder()
+                        .setCode(Status.INVALID_ARGUMENT.code.value())
+                        .setMessage(e.message)
+                        .addDetails(com.google.protobuf.Any.pack(DetailsError.newBuilder().setCode(401).build()))
+                        .build()
+                    val statusProto = StatusProto.toStatusRuntimeException(status)
+                    observer.onError(statusProto)
+                }is PixIdNotFound -> {
+                    val status = GStatus.newBuilder()
+                        .setCode(Status.NOT_FOUND.code.value())
+                        .setMessage(e.message)
+                        .addDetails(com.google.protobuf.Any.pack(DetailsError.newBuilder().setCode(404).build()))
+                        .build()
+                    val statusProto = StatusProto.toStatusRuntimeException(status)
+                    observer.onError(statusProto)
                 }
                 else -> {
-                    println("Olá")
-                    e.printStackTrace()
                     observer.onError(Status.UNKNOWN.withDescription(e.message).asException())
                 }
 

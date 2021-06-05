@@ -1,6 +1,5 @@
 package br.com.zup.edu.dto
 
-import br.com.zup.edu.RegisterPixKeyRequest.AccountType
 import br.com.zup.edu.RegisterPixKeyRequest.Type
 import br.com.zup.edu.models.Account
 import br.com.zup.edu.models.KeyModel

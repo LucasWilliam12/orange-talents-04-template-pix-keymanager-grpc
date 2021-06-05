@@ -12,7 +12,16 @@ interface ItauClient {
     @Get("/api/v1/clientes/{id}/contas")
     fun findUserByAccountTypeAndId(@QueryValue tipo: String, @PathVariable id: String): HttpResponse<AccountResponse>
 
+    @Get("/api/v1/clientes/{id}")
+    fun findUserById(@PathVariable id: String): HttpResponse<AccounBasictResponse>
 }
+
+data class AccounBasictResponse(
+    val id: String,
+    val nome: String,
+    val cpf: String,
+    val instituicao: InstituicaoResponse
+)
 
 data class AccountResponse(val tipo: String,
                           val instituicao: InstituicaoResponse,

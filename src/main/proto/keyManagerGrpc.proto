@@ -8,10 +8,23 @@ package br.com.zup.edu;
 
 service KeyManagerGrpcService {
   rpc register(RegisterPixKeyRequest) returns (RegisterPixKeyResponse) {}
+  rpc delete(DeletePixKeyRequest) returns (DeletePixKeyResponse) {}
 }
 
 message DetailsError{
   int32 code     = 1;
+}
+
+// KeyManagerService
+message DeletePixKeyRequest{
+  string clientId = 1;
+  string pixId    = 2;
+}
+
+message DeletePixKeyResponse{
+  string clientId = 1;
+  string pixId    = 2;
+  bool deleted    = 3;
 }
 
 message RegisterPixKeyRequest {
@@ -35,5 +48,6 @@ message RegisterPixKeyRequest {
 
 message RegisterPixKeyResponse {
   string pixId = 1;
-  string clientId = 2;
+  string keyValue = 2;
+  string clientId = 3;
 }

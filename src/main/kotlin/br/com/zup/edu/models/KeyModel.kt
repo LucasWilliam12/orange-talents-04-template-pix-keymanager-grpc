@@ -1,14 +1,11 @@
 package br.com.zup.edu.models
 
-import br.com.zup.edu.RegisterPixKeyRequest
 import br.com.zup.edu.models.enums.AccountTypeEnum
 import br.com.zup.edu.models.enums.KeyTypeEnum
 import io.micronaut.core.annotation.Introspected
-import io.micronaut.validation.Validated
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
-import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
@@ -18,7 +15,7 @@ data class KeyModel(@field:Column(nullable = true, unique = true)
                     @field:Size(max = 77, message = "O valor da chave tem que ser menor que 77")
                     val keyValue: String,
                     @field:NotNull(message = "O id do cliente não pode ser vazio")
-                    @field:Column(nullable = false)
+                    @Column(nullable = false, length = 16)
                     val idClient: UUID,
                     @field:NotNull(message = "O tipo da conta não pode ser vazio")
                     @field:Column(nullable = false)
@@ -33,6 +30,7 @@ data class KeyModel(@field:Column(nullable = true, unique = true)
                     val account: Account) {
 
     @Id
+    @Column(nullable = false, length = 16)
     var pixId: UUID = UUID.randomUUID()
     val createdAt: LocalDateTime = LocalDateTime.now()
 }
