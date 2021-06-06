@@ -1,6 +1,7 @@
 package br.com.zup.edu.services
 
 import br.com.zup.edu.clients.ItauClient
+import br.com.zup.edu.dto.DeleteKeyRequest
 import br.com.zup.edu.dto.KeyRequest
 import br.com.zup.edu.models.Account
 import br.com.zup.edu.models.KeyModel
@@ -11,8 +12,8 @@ import br.com.zup.edu.utils.Util
 import io.micronaut.http.HttpResponse
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -30,6 +31,19 @@ internal class RegisterNewKeyPixServiceTest{
 
     companion object {
         val client_id = UUID.randomUUID()
+        val key = KeyModel(
+            keyType = KeyTypeEnum.EMAIL,
+            keyValue = "lucas@email.com",
+            idClient = client_id,
+            accountType = AccountTypeEnum.CONTA_CORRENTE,
+            account = Account(
+                instituicao = "Itau",
+                nomeDoTitular = "Lucas William",
+                cpfDoTitular = "23998987029",
+                agencia = "1234",
+                numeroDaConta = "12345"
+            )
+        )
     }
 
     @BeforeEach
@@ -39,6 +53,16 @@ internal class RegisterNewKeyPixServiceTest{
                 id = client_id.toString())).thenReturn(
             HttpResponse.ok(Util.createAccountResponse())
         )
+        Mockito.`when`(itauClient
+            .findUserById(client_id.toString())).thenReturn(
+            HttpResponse.ok(Util.createAccountBasicResponse())
+        )
+
+    }
+
+    @AfterEach
+    fun down(){
+        repository.deleteAll()
     }
 
     @Test
@@ -50,7 +74,6 @@ internal class RegisterNewKeyPixServiceTest{
             account = AccountTypeEnum.CONTA_CORRENTE,
             keyType = KeyTypeEnum.PHONE
         ))
-        println(response)
         assertEquals(keyValue.toString(), response.keyValue.toString())
         assertEquals(client_id.toString(), response.idClient.toString())
         assertEquals(AccountTypeEnum.CONTA_CORRENTE, response.accountType)
@@ -73,19 +96,7 @@ internal class RegisterNewKeyPixServiceTest{
 
     @Test
     fun `nao deve retornar uma nova chave quando ja houver uma outra chave igual cadastrada`(){
-        repository.save(KeyModel(
-            keyType = KeyTypeEnum.EMAIL,
-            keyValue = "lucas@email.com",
-            idClient = client_id,
-            accountType = AccountTypeEnum.CONTA_CORRENTE,
-            account = Account(
-                instituicao = "Itau",
-                nomeDoTitular = "Lucas William",
-                cpfDoTitular = "23998987029",
-                agencia = "1234",
-                numeroDaConta = "12345"
-            )
-        ))
+        repository.save(key)
 
         val error = assertThrows<Exception> {
             RegisterNewKeyPixService(itauClient = itauClient, repository = repository).register(KeyRequest(
@@ -97,6 +108,42 @@ internal class RegisterNewKeyPixServiceTest{
         }
 
         assertEquals("A chave pix informada já existe", error.message)
+    }
+
+    @Test
+    fun `deve remover uma chave pix quando os dados informados forem validos`(){
+        val newKey = repository.save(key)
+
+        val response = RegisterNewKeyPixService(repository, itauClient)
+            .delete(DeleteKeyRequest(clientId = client_id.toString(),
+                pixId = newKey.pixId.toString()))
+
+        assertTrue(response.deleted)
+        assertEquals(key.idClient.toString(), response.clientId.toString())
+    }
+
+    @Test
+    fun `deve retornar um erro quando o usuario informado nao existir`(){
+        val newKey = repository.save(key)
+        val error = assertThrows<Exception> {
+            RegisterNewKeyPixService(repository, itauClient)
+                .delete(DeleteKeyRequest(clientId = "126dfef4-7901-44fb-84e2-a2cefb157890",
+                    pixId = newKey.pixId.toString()))
+        }
+
+        assertEquals("Cliente informado não foi encontrado", error.message)
+    }
+
+    @Test
+    fun `deve retornar um erro quando a chave nao for encontrada`(){
+        val newKey = repository.save(key)
+        val error = assertThrows<Exception> {
+            RegisterNewKeyPixService(repository, itauClient)
+                .delete(DeleteKeyRequest(clientId = newKey.idClient.toString(),
+                    pixId = UUID.randomUUID().toString()))
+        }
+
+        assertEquals("Nada foi encontrado", error.message)
     }
 
     @MockBean(ItauClient::class)

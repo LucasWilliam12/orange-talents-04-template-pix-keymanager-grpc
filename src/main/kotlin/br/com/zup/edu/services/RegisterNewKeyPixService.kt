@@ -49,8 +49,9 @@ class RegisterNewKeyPixService (@Inject val repository: KeyRepository, @Inject v
         val clientId: UUID =  UUID.fromString(request.clientId)
 
         // Verificando se o cliente realmente existe
-        val response = itauClient.findUserById(request.clientId)
-        if(response.body() == null){
+        try {
+            itauClient.findUserById(request.clientId).body()!!
+        }catch(e: Exception){
             throw IllegalArgumentException("Cliente informado não foi encontrado")
         }
 

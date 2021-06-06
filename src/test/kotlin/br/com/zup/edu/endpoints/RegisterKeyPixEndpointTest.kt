@@ -1,5 +1,6 @@
 package br.com.zup.edu.endpoints
 
+import br.com.zup.edu.DeletePixKeyRequest
 import br.com.zup.edu.KeyManagerGrpcServiceGrpc
 import br.com.zup.edu.RegisterPixKeyRequest
 import br.com.zup.edu.RegisterPixKeyResponse
@@ -237,6 +238,33 @@ internal class RegisterKeyPixEndpointTest{
         }
         with(error){
             assertEquals("INVALID_ARGUMENT: register.request: Chave pix inválida", message)
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+        }
+    }
+
+    @Test
+    fun `nao deve remover uma chave pix quando o idClient nao for informado`(){
+        val error = assertThrows<StatusRuntimeException> {
+            grpcClient.delete(DeletePixKeyRequest
+                .newBuilder()
+                .setPixId(UUID.randomUUID().toString()).build())
+        }
+        with(error){
+            assertEquals("INVALID_ARGUMENT: delete.request.clientId: O clientId não pode ser em branco", message)
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+        }
+    }
+
+    @Test
+    fun `nao deve remover uma chave pix quando o pixId nao for informado`(){
+        val error = assertThrows<StatusRuntimeException> {
+            grpcClient.delete(DeletePixKeyRequest
+                .newBuilder()
+                .setClientId(client_id.toString())
+                .build())
+        }
+        with(error){
+            assertEquals("INVALID_ARGUMENT: delete.request.pixId: O pixId não pode ser em branco", message)
             assertEquals(Status.INVALID_ARGUMENT.code, status.code)
         }
     }
